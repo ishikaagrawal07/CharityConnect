@@ -1,6 +1,8 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from db.database import get_db
+from db.model import User
+from utils.dependencies import get_current_user
 from modules.auth.auth_dto import RegisterRequest, LoginRequest, TokenResponse, UserResponse
 from modules.auth import auth_service
 
@@ -14,3 +16,7 @@ async def register(request: RegisterRequest, db: AsyncSession = Depends(get_db))
 async def login(request: LoginRequest, db: AsyncSession = Depends(get_db)):
     access_token = await auth_service.authenticate_user(db, request)
     return {"access_token": access_token, "token_type": "bearer"}
+
+@router.get("/me", response_model=UserResponse)
+async def get_my_profile(user: User = Depends(get_current_user)):
+    return user
